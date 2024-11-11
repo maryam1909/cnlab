@@ -1,0 +1,51 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const int WINDOW_SIZE = 4; // Sender's window size
+
+void sendFrame(int frame) {
+    cout << "Sending frame: " << frame << endl;
+}
+
+void selectiveRepeat(int numFrames) {
+    vector<bool> acked(numFrames, false);
+    int base = 0;
+    int nextSeqNum = 0;
+
+    while (base < numFrames) {
+        // Send frames within the current window
+        while (nextSeqNum < base + WINDOW_SIZE && nextSeqNum < numFrames) {
+            sendFrame(nextSeqNum);
+            nextSeqNum++;
+        }
+
+        // Simulate acknowledgment
+        int ack;
+        cout << "Enter Ack for any frame (0 to " << numFrames - 1 << "): ";
+        cin >> ack;
+
+        if (ack >= 0 && ack < numFrames) {
+            acked[ack] = true; // Mark the frame as acknowledged
+            cout << "Acknowledged frame: " << ack << endl;
+        }
+
+        // Slide the window if the base frame is acknowledged
+        while (acked[base] && base < numFrames) {
+            base++;
+        }
+    }
+    cout << "All frames transmitted successfully!" << endl;
+}
+
+int main() {
+    int numFrames;
+    cout << "Enter number of frames: ";
+    cin >> numFrames;
+
+    selectiveRepeat(numFrames);
+
+    return 0;
+}
+
+
