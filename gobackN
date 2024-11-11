@@ -1,0 +1,61 @@
+#include <iostream>
+#include <cstdlib> // For rand() and srand()
+#include <ctime>   // For time()
+using namespace std;
+
+const int WINDOW_SIZE = 4; // Sender's window size
+
+void sendFrame(int frame) {
+    cout << "Sending frame: " << frame << endl;
+}
+
+// Function to simulate receiving an acknowledgment
+int receiveAck(int base, int nextSeqNum) {
+    // Simulate a random acknowledgment (including the possibility of lost ack)
+    int ack = rand() % (nextSeqNum + 1); // Random ack between base and nextSeqNum
+    if (ack < base) {
+        cout << "Ack lost or delayed!" << endl;
+        return -1; // Simulate lost ack
+    } else {
+        cout << "Received Ack for frame: " << ack << endl;
+        return ack;
+    }
+}
+
+void goBackN(int numFrames) {
+    int base = 0;
+    int nextSeqNum = 0;
+
+    while (base < numFrames) {
+        // Send frames in the window
+        while (nextSeqNum < base + WINDOW_SIZE && nextSeqNum < numFrames) {
+            sendFrame(nextSeqNum);
+            nextSeqNum++;
+        }
+
+        // Simulate acknowledgment for the window
+        int ack = receiveAck(base, nextSeqNum);
+
+        // If a valid acknowledgment is received, move the base
+        if (ack != -1) {
+            base = ack + 1; // Move the base to the next unacknowledged frame
+        } else {
+            // If ack is lost or delayed, retransmit from the base frame
+            cout << "Timeout! Resending frames from " << base << " to " << nextSeqNum - 1 << endl;
+            nextSeqNum = base; // Reset nextSeqNum to base for retransmission
+        }
+    }
+    cout << "All frames transmitted successfully!" << endl;
+}
+
+int main() {
+    srand(time(0)); // Seed for random number generation
+
+    int numFrames;
+    cout << "Enter number of frames: ";
+    cin >> numFrames;
+
+    goBackN(numFrames);
+
+    return 0;
+}
